@@ -6,6 +6,17 @@
 float fTranslate;
 float fRotate;
 
+typedef GLint vertex3[3];
+vertex3 pt[8] = { {0,0,0},{0,1,0} ,{1,0,0} ,{1,1,0} ,{0,0,1} ,{0,1,1} ,{1,0,1} ,{1,1,1} };
+
+void Draw_Table() {
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_INT, 0, pt);
+	glColor3f(1.0, 0.0, .0);
+	GLubyte vertIndex[] = { 6, 2, 3, 7, 5, 1, 0, 4, 7, 3, 1, 5, 4, 0, 2, 6, 2, 0, 1, 3, 7, 5, 4, 6 };
+	glDrawElements(GL_QUADS, 24, GL_UNSIGNED_BYTE, vertIndex);
+}
+
 void Draw_Triangle() // This function draws a triangle with RGB colors
 {
 	glBegin(GL_TRIANGLES);
@@ -59,7 +70,7 @@ void redraw()
     glPushMatrix();
 		glTranslatef(0.0f, 0.0f,-6.0f);			// Place the triangle at Center
 		glRotatef(fRotate, 0, 1.0f, 0);			// Rotate around Y axis
-		Draw_Triangle();						// Draw triangle
+		Draw_Table();						// Draw triangle
 	glPopMatrix();
 
 	fTranslate += 0.005f;
