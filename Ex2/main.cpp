@@ -1,7 +1,7 @@
 // main.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "glut.h"
+#include "gl/glut.h"
 
 float fTranslate;
 float fRotate;
