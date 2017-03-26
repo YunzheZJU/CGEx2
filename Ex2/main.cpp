@@ -5,6 +5,7 @@
 
 float fTranslate;
 float fRotate;
+float fScale;
 
 typedef GLfloat vertex3[3];
 //vertex3 pt[40] = { {0,0,0},{0,1,0} ,{1,0,0} ,{1,1,0} ,{0,0,1} ,{0,1,1} ,{1,0,1} ,{1,1,1} };
@@ -84,12 +85,13 @@ void idle()
 
 void redraw()
 {
-// If want display in wireframe mode
+	// Display in wireframe mode
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	glLoadIdentity();									// Reset The Current Modelview Matrix
+	glLoadIdentity();							// Reset The Current Modelview Matrix
 	
+	// Translate
 	glPushMatrix();
 		glTranslatef(-3.0f, 0.0f,-6.0f);		// Place the table Left
 		glTranslatef(0.0f, fTranslate, 0.0f);	// Translate in Y direction
@@ -97,18 +99,31 @@ void redraw()
 		Draw_Table();							// Draw table					
 	glPopMatrix();
 
+	// Rotate
     glPushMatrix();
 		glTranslatef(0.0f, 0.0f,-6.0f);			// Place the table at Center
 		//glRotatef(fRotate, 1.0f, 1.0f, 0);	// Rotate around Y axis
-		glRotatef(fRotate, 30*fRotate, 20*fRotate, 40*fRotate);
+		glRotatef(fRotate, 30 * fRotate, 20 * fRotate, 40 * fRotate);
 		glScalef(0.4f, 0.4f, 0.4f);				// Scale the Table
+		Draw_Table();							// Draw table
+	glPopMatrix();
+
+	// Scale
+	glPushMatrix();
+		glTranslatef(3.0f, 0.0f, -6.0f);		// Place the table at Center
+		glScalef(0.4 * (1 - fScale), 0.4 * (1 - fScale), 0.4 * (1 - fScale));	// Scale the Table
 		Draw_Table();							// Draw table
 	glPopMatrix();
 
 	fTranslate += 0.005f;
 	fRotate    += 0.5f;
+	fScale     += 0.005f;
 
-	if(fTranslate > 1.5f) fTranslate = 0.0f;
+	if (fTranslate > 2.5f)
+		fTranslate = 0.0f;
+	if (fScale > 0.5f)
+		fScale = 0.0f;
+
 	glutSwapBuffers();
 }
 
