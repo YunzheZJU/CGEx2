@@ -2,13 +2,35 @@
 //
 
 #include "gl/glut.h"
+#include "iostream"
 
-float fTranslate;
+using namespace std;
+
+#define Xmax 0
+#define Ymax 1
+#define Xmin 2
+#define Ymin 3
+
+float fTranslateX;
+float fTranslateY;
 float fRotate;
-float fScale;
+float fScale = 0.5f;
+float fRed = 1.0f;
+float fGreen = 1.0f;
+float fBlue = 1.0f;
+
+float TvX = 0.02f;
+float TvY = 0.02f;
+float Sv = 0.0005f;
+float CvR = 0.006f;
+float CvG = 0.008f;
+float CvB = 0.002f;
+float Border[4] = {3.0f, 2.5f, -3.0f, -2.5f};//Xmax, Ymax, Xmin, Ymin
+
+int ScaleMark = 1;
+int ColorMark = 1;
 
 typedef GLfloat vertex3[3];
-//vertex3 pt[40] = { {0,0,0},{0,1,0} ,{1,0,0} ,{1,1,0} ,{0,0,1} ,{0,1,1} ,{1,0,1} ,{1,1,1} };
 vertex3 vt[40] = { 
 	//0-3
 	{ -2.5,2,-1 },{ 2.5,2,-1 },{ -2.5,2,-2 },{ 2.5,2,-2 },
@@ -32,11 +54,70 @@ vertex3 vt[40] = {
 	{ -2.5,-2,-1 },{ 2.5,-2,-1 },{ -2.5,-2,-2 },{ 2.5,-2,-2 } 
 };
 
+void calTranslate(void) {
+	if (fTranslateY == 0)
+		if (fTranslateX <= 0)
+			if (fTranslateX > Border[Xmin])
+				fTranslateX -= TvX;
+			else
+				fTranslateY += TvY;
+		else
+			fTranslateY -= TvY;
+	else if (fTranslateY <= Border[Ymax] && fTranslateY >= Border[Ymin])
+		if (fTranslateX <= 0)
+			fTranslateY += TvY;
+		else
+			fTranslateY -= TvY;
+	else if (fTranslateY > Border[Ymax])
+		if (fTranslateX >= Border[Xmax])
+			fTranslateY -= TvY;
+		else
+			fTranslateX += TvX;
+	else
+		if (fTranslateX <= Border[Xmin])
+			fTranslateY += TvY;
+		else
+			fTranslateX -= TvX;
+}
+
+void CalScale(void) {
+	if (fScale <= 0.5f && fScale >= 0.3f)
+		if (ScaleMark == 1)
+			fScale -= Sv;
+		else
+			fScale += Sv;
+	else if (fScale > 0.5f) {
+		fScale -= Sv;
+		ScaleMark = 1;
+	}
+	else if (fScale < 0.3f) {
+		fScale += Sv;
+		ScaleMark = 0;
+	}
+}
+
+void CalColor(float* Color, float* v) {
+	if (*Color < 1.0f && *Color > 0.1f)
+		if (ColorMark == 1)
+			*Color -= *v;
+		else
+			*Color += *v;
+	else if (*Color >= 1.0f) {
+		*Color -= *v;
+		ColorMark = 1;
+		*v *= 1.2;
+	}
+	else if (*Color <= 0.1f) {
+		*Color += *v;
+		ColorMark = 0;
+		*v *= 0.8;
+	}
+}
+
 void Draw_Table() {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, vt);//死活没显示长方形居然是因为没改“pt”
-	glColor3f(1.0, 0.0, 0.0);
-	//GLubyte vertIndex[] = { 6, 2, 3, 7, 5, 1, 0, 4, 7, 3, 1, 5, 4, 0, 2, 6, 2, 0, 1, 3, 7, 5, 4, 6 };
+	glColor3f(fRed, fGreen, fBlue);
 	GLubyte vertexIndex[] = {
 		1,3,2,0, 37,39,3,1, 36,38,39,37, 0,2,38,36, 38,2,3,39, 36,37,1,0,	//桌面
 		5,7,6,4, 13,15,7,5, 12,14,15,13, 4,6,14,12, 4,12,13,5,				//左上
@@ -45,18 +126,6 @@ void Draw_Table() {
 		25,27,26,24, 33,35,27,25, 32,34,35,33, 24,26,34,32, 24,32,33,25		//右下
 	};
 	glDrawElements(GL_QUADS, 104, GL_UNSIGNED_BYTE, vertexIndex);
-}
-
-void Draw_Triangle() // This function draws a triangle with RGB colors
-{
-	glBegin(GL_TRIANGLES);
-		 glColor3f(1.0f, 0.0f, 0.0f);
-		glVertex3f(0.0f, 1.0f, 0.0f);
-		 glColor3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(-1.0f,-1.0f, 0.0f);
-		 glColor3f(0.0f, 0.0f,1.0f);
-		glVertex3f( 1.0f,-1.0f, 0.0f);			
-	glEnd();
 }
 
 void reshape(int width, int height)
@@ -90,39 +159,24 @@ void redraw()
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glLoadIdentity();							// Reset The Current Modelview Matrix
-	
-	// Translate
-	glPushMatrix();
-		glTranslatef(-3.0f, 0.0f,-6.0f);		// Place the table Left
-		glTranslatef(0.0f, fTranslate, 0.0f);	// Translate in Y direction
-		glScalef(0.4f, 0.4f, 0.4f);				// Scale the Table
-		Draw_Table();							// Draw table					
-	glPopMatrix();
 
-	// Rotate
-    glPushMatrix();
-		glTranslatef(0.0f, 0.0f,-6.0f);			// Place the table at Center
-		//glRotatef(fRotate, 1.0f, 1.0f, 0);	// Rotate around Y axis
+	// 3 in 1
+	glPushMatrix();
+		glTranslatef(fTranslateX, fTranslateY, -6.0f);		// Place the table at Center
 		glRotatef(fRotate, 30 * fRotate, 20 * fRotate, 40 * fRotate);
-		glScalef(0.4f, 0.4f, 0.4f);				// Scale the Table
+		glScalef(fScale, fScale, fScale);				// Scale the Table
 		Draw_Table();							// Draw table
 	glPopMatrix();
 
-	// Scale
-	glPushMatrix();
-		glTranslatef(3.0f, 0.0f, -6.0f);		// Place the table at Center
-		glScalef(0.4 * (1 - fScale), 0.4 * (1 - fScale), 0.4 * (1 - fScale));	// Scale the Table
-		Draw_Table();							// Draw table
-	glPopMatrix();
+	calTranslate();
 
-	fTranslate += 0.005f;
 	fRotate    += 0.5f;
-	fScale     += 0.005f;
 
-	if (fTranslate > 2.5f)
-		fTranslate = 0.0f;
-	if (fScale > 0.5f)
-		fScale = 0.0f;
+	CalScale();
+
+	CalColor(&fRed, &CvR);
+	CalColor(&fGreen, &CvG);
+	CalColor(&fBlue, &CvB);
 
 	glutSwapBuffers();
 }
