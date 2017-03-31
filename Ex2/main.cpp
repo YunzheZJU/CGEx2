@@ -34,6 +34,8 @@ float Border[4] = {3.0f, 2.5f, -3.0f, -2.5f};//Xmax, Ymax, Xmin, Ymin
 int ScaleMark = 1;
 int ColorMark = 1;
 
+int frame = 1;
+
 enum {
 	NOTHING,
 	RED,
@@ -127,10 +129,17 @@ void CalColor(float* Color, float* v) {
 	}
 }
 
-void Draw_Table() {
+void DrawCube(GLfloat x, GLfloat y, GLfloat z, GLfloat xlength, GLfloat ylength, GLfloat zlength) {
+	glPushMatrix();
+		glTranslatef(x, y, z);
+		glScalef(xlength, ylength, zlength);
+		glutSolidCube(1);
+	glPopMatrix();
+}
+
+void Draw_Table_by_vertex_array() {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, vt);//死活没显示长方形居然是因为没改“pt”
-	glColor3f(fRed, fGreen, fBlue);
 	GLubyte vertexIndex[] = {
 		1,3,2,0, 37,39,3,1, 36,38,39,37, 0,2,38,36, 38,2,3,39, 36,37,1,0,	//桌面
 		5,7,6,4, 13,15,7,5, 12,14,15,13, 4,6,14,12, 4,12,13,5,				//左上
@@ -139,6 +148,14 @@ void Draw_Table() {
 		25,27,26,24, 33,35,27,25, 32,34,35,33, 24,26,34,32, 24,32,33,25		//右下
 	};
 	glDrawElements(GL_QUADS, 104, GL_UNSIGNED_BYTE, vertexIndex);
+}
+
+void Draw_Table() {
+	DrawCube(0.0, 0.0, -1.5, 5.0, 4.0, 1.0);
+	DrawCube(1.5, 1.0, 0.5, 0.67, 0.67, 3.0);
+	DrawCube(1.5, -1.0, 0.5, 0.67, 0.67, 3.0);
+	DrawCube(-1.5, 1.0, 0.5, 0.67, 0.67, 3.0);
+	DrawCube(-1.5, -1.0, 0.5, 0.67, 0.67, 3.0);
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -178,7 +195,7 @@ void menu(int value) {
 	}
 }
 
-void timer(int value) {
+void transform(void) {
 	if (run) {
 		calTranslate();
 
@@ -190,6 +207,10 @@ void timer(int value) {
 		CalColor(&fGreen, &CvG);
 		CalColor(&fBlue, &CvB);
 	}
+}
+
+void timer(int value) {
+	transform();
 
 	glutPostRedisplay();
 
@@ -233,10 +254,14 @@ void redraw()
 		glTranslatef(fTranslateX, fTranslateY, -6.0f);		// Place the table at Center
 		glRotatef(fRotate, 30 * fRotate, 20 * fRotate, 40 * fRotate);
 		glScalef(fScale, fScale, fScale);				// Scale the Table
+		glColor3f(fRed, fGreen, fBlue);
 		Draw_Table();							// Draw table
 	glPopMatrix();
 
 	glutSwapBuffers();
+
+	//cout << frame << endl;
+	//frame++;
 }
 
 int main (int argc,  char *argv[])
@@ -248,6 +273,7 @@ int main (int argc,  char *argv[])
 
 	// Set the background color - dark grey
 	glClearColor(0.2, 0.2, 0.2, 0.0);
+	// Set the line width
 	glLineWidth(fLineWidth);
 
 	glutDisplayFunc(redraw);
