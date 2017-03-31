@@ -3,6 +3,7 @@
 
 #include "gl/glut.h"
 #include "iostream"
+//#include "timer"
 
 using namespace std;
 
@@ -11,7 +12,8 @@ using namespace std;
 #define Xmin 2
 #define Ymin 3
 
-int run = 1;
+bool run = 1;
+bool lm = 1;					// Polygon line mode
 
 float fLineWidth = 2.0f;
 
@@ -44,6 +46,8 @@ enum {
 	DEFAULT,
 	EXIT
 };
+
+//timer fps(10);
 
 typedef GLfloat vertex3[3];
 vertex3 vt[40] = { 
@@ -170,6 +174,10 @@ void keyboard(unsigned char key, int x, int y) {
 		cout << "c pressed. Continue." << endl;
 		run = 1;
 		break;
+	case 'x':
+		cout << "x pressed. Switch line mode: " << lm << "." << endl;
+		lm = !lm;
+		break;
 	}
 }
 
@@ -209,6 +217,17 @@ void transform(void) {
 	}
 }
 
+//void updateFPS()
+//{
+//	char buf[512];
+//	fps.frame();
+//	if (fps.timing_updated()) {
+//		sprintf(buf, "AntiAlias - FPS: %.1f", fps.get_fps());
+//
+//		glutSetWindowTitle(buf);
+//	}
+//}
+
 void timer(int value) {
 	transform();
 
@@ -244,7 +263,10 @@ void idle()
 void redraw()
 {
 	// Display in wireframe mode
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if (lm)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glLoadIdentity();							// Reset The Current Modelview Matrix
@@ -264,24 +286,9 @@ void redraw()
 	//frame++;
 }
 
-int main (int argc,  char *argv[])
-{
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutInitWindowSize(640,480);                                                  
-	glutCreateWindow("Exercise2");
-
-	// Set the background color - dark grey
-	glClearColor(0.2, 0.2, 0.2, 0.0);
-	// Set the line width
-	glLineWidth(fLineWidth);
-
-	glutDisplayFunc(redraw);
-	glutReshapeFunc(reshape);		
-	glutKeyboardFunc(keyboard);
-	glutIdleFunc(idle);
-
+void initMenu(void) {
 	glutCreateMenu(menu);
+
 	glutAddMenuEntry("Please select as quick as possible!", NOTHING);
 	glutAddMenuEntry("-----------------------------------", NOTHING);
 	glutAddMenuEntry("Red", RED);
@@ -290,9 +297,30 @@ int main (int argc,  char *argv[])
 	glutAddMenuEntry("Default", DEFAULT);
 	glutAddMenuEntry("-----------------------------------", NOTHING);
 	glutAddMenuEntry("Exit", EXIT);
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
 
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+int main (int argc,  char *argv[])
+{
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+	glutInitWindowSize(640,480);                                                  
+	glutCreateWindow("Exercise2");
+
+	// Initiate the menu
+	initMenu();
+	// Set the background color - dark grey
+	glClearColor(0.2, 0.2, 0.2, 0.0);
+	// Set the line width
+	glLineWidth(fLineWidth);
+	// Set the timer
 	glutTimerFunc(16, timer, 1);
+
+	glutDisplayFunc(redraw);
+	glutReshapeFunc(reshape);		
+	glutKeyboardFunc(keyboard);
+	glutIdleFunc(idle);
 
 	glutMainLoop();
 
