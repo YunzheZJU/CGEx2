@@ -44,6 +44,7 @@ enum {
 	GREEN,
 	BLUE,
 	DEFAULT,
+	HIDE,
 	EXIT
 };
 
@@ -197,7 +198,7 @@ void menu(int value) {
 		break;
 	case EXIT:
 		exit(0);
-	case NOTHING:
+	case HIDE:
 		glutDestroyMenu(glutGetMenu());
 		break;
 	}
@@ -290,12 +291,14 @@ void initMenu(void) {
 	glutCreateMenu(menu);
 
 	glutAddMenuEntry("Please select as quick as possible!", NOTHING);
-	glutAddMenuEntry("-----------------------------------", NOTHING);
-	glutAddMenuEntry("Red", RED);
-	glutAddMenuEntry("Green", GREEN);
-	glutAddMenuEntry("Blue", BLUE);
-	glutAddMenuEntry("Default", DEFAULT);
-	glutAddMenuEntry("-----------------------------------", NOTHING);
+	glutAddMenuEntry("---------Change color here---------", NOTHING);
+	glutAddMenuEntry("    Red", RED);
+	glutAddMenuEntry("    Green", GREEN);
+	glutAddMenuEntry("    Blue", BLUE);
+	glutAddMenuEntry("    Default", DEFAULT);
+	glutAddMenuEntry("------------------------------------------", NOTHING);
+	glutAddMenuEntry("Hide menu. --You cannot cancel it!", HIDE);
+	glutAddMenuEntry("------------------------------------------", NOTHING);
 	glutAddMenuEntry("Exit", EXIT);
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
