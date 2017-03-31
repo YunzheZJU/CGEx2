@@ -11,6 +11,10 @@ using namespace std;
 #define Xmin 2
 #define Ymin 3
 
+int run = 1;
+
+float fLineWidth = 2.0f;
+
 float fTranslateX;
 float fTranslateY;
 float fRotate;
@@ -29,6 +33,15 @@ float Border[4] = {3.0f, 2.5f, -3.0f, -2.5f};//Xmax, Ymax, Xmin, Ymin
 
 int ScaleMark = 1;
 int ColorMark = 1;
+
+enum {
+	NOTHING,
+	RED,
+	GREEN,
+	BLUE,
+	DEFAULT,
+	EXIT
+};
 
 typedef GLfloat vertex3[3];
 vertex3 vt[40] = { 
@@ -128,6 +141,61 @@ void Draw_Table() {
 	glDrawElements(GL_QUADS, 104, GL_UNSIGNED_BYTE, vertexIndex);
 }
 
+void keyboard(unsigned char key, int x, int y) {
+	switch (key) {
+	case 27:
+		exit(0);
+	case 'q':
+		cout << "q pressed. Pause." << endl;
+		run = 0;
+		break;
+	case 'c':
+		cout << "c pressed. Continue." << endl;
+		run = 1;
+		break;
+	}
+}
+
+void menu(int value) {
+	switch (value) {
+	case RED:
+		glClearColor(0.8, 0.0, 0.0, 0.0);
+		break;
+	case GREEN:
+		glClearColor(0.0, 0.8, 0.0, 0.0);
+		break;
+	case BLUE:
+		glClearColor(0.0, 0.0, 0.8, 0.0);
+		break;
+	case DEFAULT:
+		glClearColor(0.2, 0.2, 0.2, 0.0);
+		break;
+	case EXIT:
+		exit(0);
+	case NOTHING:
+		glutDestroyMenu(glutGetMenu());
+		break;
+	}
+}
+
+void timer(int value) {
+	if (run) {
+		calTranslate();
+
+		fRotate += 0.5f;
+
+		CalScale();
+
+		CalColor(&fRed, &CvR);
+		CalColor(&fGreen, &CvG);
+		CalColor(&fBlue, &CvB);
+	}
+
+	glutPostRedisplay();
+
+	glutTimerFunc(16, timer, 1);
+}
+
 void reshape(int width, int height)
 {
 	if (height==0)										// Prevent A Divide By Zero By
@@ -168,16 +236,6 @@ void redraw()
 		Draw_Table();							// Draw table
 	glPopMatrix();
 
-	calTranslate();
-
-	fRotate    += 0.5f;
-
-	CalScale();
-
-	CalColor(&fRed, &CvR);
-	CalColor(&fGreen, &CvG);
-	CalColor(&fBlue, &CvB);
-
 	glutSwapBuffers();
 }
 
@@ -188,9 +246,27 @@ int main (int argc,  char *argv[])
 	glutInitWindowSize(640,480);                                                  
 	glutCreateWindow("Exercise2");
 
+	// Set the background color - dark grey
+	glClearColor(0.2, 0.2, 0.2, 0.0);
+	glLineWidth(fLineWidth);
+
 	glutDisplayFunc(redraw);
 	glutReshapeFunc(reshape);		
-	glutIdleFunc(idle);					
+	glutKeyboardFunc(keyboard);
+	glutIdleFunc(idle);
+
+	glutCreateMenu(menu);
+	glutAddMenuEntry("Please select as quick as possible!", NOTHING);
+	glutAddMenuEntry("-----------------------------------", NOTHING);
+	glutAddMenuEntry("Red", RED);
+	glutAddMenuEntry("Green", GREEN);
+	glutAddMenuEntry("Blue", BLUE);
+	glutAddMenuEntry("Default", DEFAULT);
+	glutAddMenuEntry("-----------------------------------", NOTHING);
+	glutAddMenuEntry("Exit", EXIT);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+	glutTimerFunc(16, timer, 1);
 
 	glutMainLoop();
 
