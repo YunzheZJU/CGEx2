@@ -11,6 +11,7 @@ bool lm = 1;					// Polygon line mode switch
 
 float fLineWidth = 2.0f;
 int delay = 8;					// 帧延迟，数字较小时效果不明显
+char text[50] = "Welcome!";
 
 float fTranslate;
 float fRotate;
@@ -90,21 +91,25 @@ void keyboard(unsigned char key, int x, int y) {
 	case 'q':
 	case 'Q':
 		cout << "Q pressed. Pause." << endl;
+		strcpy(text, "Q pressed. Pause.");
 		run = 0;
 		break;
 	case 'c':
 	case 'C':
 		cout << "C pressed. Continue." << endl;
+		strcpy(text, "C pressed. Continue.");
 		run = 1;
 		break;
 	case 'x':
 	case 'X':
 		cout << "X pressed. Switch on/off line mode: " << lm << "." << endl;
+		strcpy(text, "X pressed. Switch on/off line mode.");
 		lm = !lm;
 		break;
 	case 'm':
 	case 'M':
 		cout << "M pressed. Click the right button to check for menu items." << endl;
+		strcpy(text, "M pressed. Click the right button to check for menu items.");
 		glutAttachMenu(GLUT_RIGHT_BUTTON);
 		break;
 	}
@@ -115,25 +120,30 @@ void menu(int value) {
 	case RED:
 		cout << "Background color is set to: RED." << endl;
 		glClearColor(0.8, 0.0, 0.0, 0.0);
+		strcpy(text, "Background color changed.");
 		break;
 	case GREEN:
 		cout << "Background color is set to: GREEN." << endl;
 		glClearColor(0.0, 0.8, 0.0, 0.0);
+		strcpy(text, "Background color changed.");
 		break;
 	case BLUE:
 		cout << "Background color is set to: BLUE." << endl;
 		glClearColor(0.0, 0.0, 0.8, 0.0);
+		strcpy(text, "Background color changed.");
 		break;
 	case DEFAULT:
 		cout << "Background color is set to: DEFAULT." << endl;
 		glClearColor(0.2, 0.2, 0.2, 0.0);
+		strcpy(text, "Background color changed.");
 		break;
 	case EXIT:
 		cout << "Bye." << endl;
 		exit(0);
 	case DISABLE:
-		cout << "Menu is disabled. Press M to enable menu. " << endl;
+		cout << "Menu is disabled. Press M to enable menu." << endl;
 		glutDetachMenu(GLUT_RIGHT_BUTTON);
+		strcpy(text, "Menu is disabled. Press M to enable menu.");
 		break;
 	}
 }
@@ -214,6 +224,13 @@ void redraw() {
 		//Draw_Table_by_vertex_array();			// Draw table by vertex array
 	glPopMatrix();
 
+	glColor3f(1.0f, 1.0f, 1.0f);	// 设置字体颜色
+	char *c;
+	glRasterPos3f(-4.0f, -3.0f, -6.0f);
+	for (c = text; *c != '\0'; c++) {
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+	}
+
 	glutSwapBuffers();
 }
 
@@ -240,7 +257,7 @@ int main(int argc, char *argv[]) {
 	glutInitWindowSize(640, 480);
 	glutCreateWindow("Exercise2");
 	cout << "Welcome.\nPress different keys below to see effects." << endl;
-	cout << "Q\tPause\nC\tContinue\nX\tSwitch on/off Line Mode\nM\tEnable menu\nEsc\tQuit" << endl;
+	cout << "\tQ\tPause\n\tC\tContinue\n\tX\tSwitch on/off Line Mode\n\tS\tScreenshot\n\tM\tEnable menu\n\tEsc\tQuit" << endl;
 	cout << "You can also click the right button to check menu." << endl;
 
 	// Initiate the menu
@@ -261,5 +278,3 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
-
-
