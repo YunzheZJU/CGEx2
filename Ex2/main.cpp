@@ -10,7 +10,7 @@ bool run = 1;
 bool lm = 1;					// Polygon line mode switch
 
 float fLineWidth = 2.0f;
-int delay = 8;
+int delay = 8;					// 帧延迟，数字较小时效果不明显
 
 float fTranslate;
 float fRotate;
@@ -22,7 +22,7 @@ enum {
 	GREEN,
 	BLUE,
 	DEFAULT,
-	HIDE,
+	DISABLE,
 	EXIT
 };
 
@@ -53,9 +53,9 @@ vertex3 vt[40] = {
 
 void DrawCube(GLfloat x, GLfloat y, GLfloat z, GLfloat xlength, GLfloat ylength, GLfloat zlength) {
 	glPushMatrix();
-	glTranslatef(x, y, z);
-	glScalef(xlength, ylength, zlength);
-	glutSolidCube(1);
+		glTranslatef(x, y, z);
+		glScalef(xlength, ylength, zlength);
+		glutSolidCube(1);
 	glPopMatrix();
 }
 
@@ -85,18 +85,27 @@ void Draw_Table() {
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27:
+		cout << "Bye." << endl;
 		exit(0);
 	case 'q':
-		cout << "q pressed. Pause." << endl;
+	case 'Q':
+		cout << "Q pressed. Pause." << endl;
 		run = 0;
 		break;
 	case 'c':
-		cout << "c pressed. Continue." << endl;
+	case 'C':
+		cout << "C pressed. Continue." << endl;
 		run = 1;
 		break;
 	case 'x':
-		cout << "x pressed. Switch line mode: " << lm << "." << endl;
+	case 'X':
+		cout << "X pressed. Switch on/off line mode: " << lm << "." << endl;
 		lm = !lm;
+		break;
+	case 'm':
+	case 'M':
+		cout << "M pressed. Click the right button to check for menu items." << endl;
+		glutAttachMenu(GLUT_RIGHT_BUTTON);
 		break;
 	}
 }
@@ -104,21 +113,27 @@ void keyboard(unsigned char key, int x, int y) {
 void menu(int value) {
 	switch (value) {
 	case RED:
+		cout << "Background color is set to: RED." << endl;
 		glClearColor(0.8, 0.0, 0.0, 0.0);
 		break;
 	case GREEN:
+		cout << "Background color is set to: GREEN." << endl;
 		glClearColor(0.0, 0.8, 0.0, 0.0);
 		break;
 	case BLUE:
+		cout << "Background color is set to: BLUE." << endl;
 		glClearColor(0.0, 0.0, 0.8, 0.0);
 		break;
 	case DEFAULT:
+		cout << "Background color is set to: DEFAULT." << endl;
 		glClearColor(0.2, 0.2, 0.2, 0.0);
 		break;
 	case EXIT:
+		cout << "Bye." << endl;
 		exit(0);
-	case HIDE:
-		glutDestroyMenu(glutGetMenu());
+	case DISABLE:
+		cout << "Menu is disabled. Press M to enable menu. " << endl;
+		glutDetachMenu(GLUT_RIGHT_BUTTON);
 		break;
 	}
 }
@@ -212,7 +227,7 @@ void initMenu(void) {
 	glutAddMenuEntry("    Blue", BLUE);
 	glutAddMenuEntry("    Default", DEFAULT);
 	glutAddMenuEntry("------------------------------------------", NOTHING);
-	glutAddMenuEntry("Hide menu. --You cannot cancel it!", HIDE);
+	glutAddMenuEntry("Disable menu", DISABLE);
 	glutAddMenuEntry("------------------------------------------", NOTHING);
 	glutAddMenuEntry("Exit", EXIT);
 
@@ -224,6 +239,9 @@ int main(int argc, char *argv[]) {
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
 	glutInitWindowSize(640, 480);
 	glutCreateWindow("Exercise2");
+	cout << "Welcome.\nPress different keys below to see effects." << endl;
+	cout << "Q\tPause\nC\tContinue\nX\tSwitch on/off Line Mode\nM\tEnable menu\nEsc\tQuit" << endl;
+	cout << "You can also click the right button to check menu." << endl;
 
 	// Initiate the menu
 	initMenu();
