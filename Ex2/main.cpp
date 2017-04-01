@@ -3,17 +3,16 @@
 
 #include "gl/glut.h"
 #include "iostream"
-//#include "timer"
+#include "bitmap.h"
+#include "stdlib.h"
 
 using namespace std;
 
-#define Xmax 0
-#define Ymax 1
-#define Xmin 2
-#define Ymin 3
+#pragma warning(disable: 4996)
 
 bool run = 1;
 bool lm = 1;					// Polygon line mode
+bool save = 0;
 
 float fLineWidth = 2.0f;
 
@@ -38,6 +37,15 @@ int ColorMark = 1;
 
 int frame = 1;
 
+int delay = 8;
+
+enum {
+	Xmax,
+	Ymax,
+	Xmin,
+	Ymin
+};
+
 enum {
 	NOTHING,
 	RED,
@@ -47,8 +55,6 @@ enum {
 	HIDE,
 	EXIT
 };
-
-//timer fps(10);
 
 typedef GLfloat vertex3[3];
 vertex3 vt[40] = { 
@@ -179,7 +185,56 @@ void keyboard(unsigned char key, int x, int y) {
 		cout << "x pressed. Switch line mode: " << lm << "." << endl;
 		lm = !lm;
 		break;
+	case 's':
+		screenshot();
+		cout << "s pressed. Screenshot Saved." << endl;
+		break;
+	default:
+		cout << "Some key is pressed, but nothing happened." << endl;
+		break;
 	}
+}
+
+void exportBmp(void) {
+	GLint viewPort[4] = { 0 };
+	glGetIntegerv(GL_VIEWPORT, viewPort);
+	GLbyte * buffer = (GLbyte *)malloc(viewPort[2] * viewPort[3] * sizeof(GLbyte) * 3);
+	glReadPixels(viewPort[0], viewPort[1], viewPort[2], viewPort[3],
+		GL_BGR_EXT, GL_UNSIGNED_BYTE, buffer);
+	long fileSize = viewPort[2] * viewPort[3] * 3 + 54;
+	//int i=0;  
+
+	fileHeader.bfType[0] = 0x42;
+	fileHeader.bfType[1] = 0x4d;
+	LongToByte(fileSize, fileHeader.bfSize);
+	LongToByte(54, fileHeader.bfOffBits);
+
+	LongToByte(sizeof(infoHeader), infoHeader.biSize);
+	LongToByte(viewPort[2], infoHeader.biWidth);
+	LongToByte(viewPort[3], infoHeader.biHeight);
+
+	infoHeader.biPlanes[0] = 0x01;
+	infoHeader.biPlanes[1] = 0x00;
+	infoHeader.biBitCount[0] = 0x18;
+	infoHeader.biBitCount[1] = 0x00;
+	LongToByte(0, infoHeader.biCompression);
+
+	LongToByte((viewPort[2] * viewPort[3]), infoHeader.biSizeImage);
+
+	char filename[30];
+	sprintf(filename, "./screenshots/%d.bmp", frame);
+	FILE * fp = fopen(filename, "w+");
+	//cout << "1" << endl;
+	fwrite(&fileHeader, sizeof(fileHeader), 1, fp);
+	//cout << "2" << endl;
+	fwrite(&infoHeader, sizeof(infoHeader), 1, fp);
+	//cout << "3" << endl;
+	fwrite(buffer, 1, (viewPort[2] * viewPort[3] * 3), fp);
+	//cout << "4" << endl;
+	fclose(fp);
+	//cout << "5" << endl;
+
+	free(buffer);
 }
 
 void menu(int value) {
@@ -218,23 +273,12 @@ void transform(void) {
 	}
 }
 
-//void updateFPS()
-//{
-//	char buf[512];
-//	fps.frame();
-//	if (fps.timing_updated()) {
-//		sprintf(buf, "AntiAlias - FPS: %.1f", fps.get_fps());
-//
-//		glutSetWindowTitle(buf);
-//	}
-//}
-
 void timer(int value) {
 	transform();
 
 	glutPostRedisplay();
 
-	glutTimerFunc(16, timer, 1);
+	glutTimerFunc(delay, timer, 1);
 }
 
 void reshape(int width, int height)
@@ -254,11 +298,6 @@ void reshape(int width, int height)
 
 	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 	glLoadIdentity();									// Reset The Modelview Matrix
-}
-
-void idle()
-{
-	glutPostRedisplay();
 }
 
 void redraw()
@@ -284,7 +323,10 @@ void redraw()
 	glutSwapBuffers();
 
 	//cout << frame << endl;
-	//frame++;
+	/*if ( frame <= 10000 && save) {
+		exportBmp();
+		frame++;
+	}*/
 }
 
 void initMenu(void) {
@@ -318,16 +360,13 @@ int main (int argc,  char *argv[])
 	// Set the line width
 	glLineWidth(fLineWidth);
 	// Set the timer
-	glutTimerFunc(16, timer, 1);
+	glutTimerFunc(delay, timer, 1);
 
 	glutDisplayFunc(redraw);
 	glutReshapeFunc(reshape);		
 	glutKeyboardFunc(keyboard);
-	glutIdleFunc(idle);
 
 	glutMainLoop();
 
 	return 0;
 }
-
-

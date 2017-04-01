@@ -243,3 +243,7 @@ ModelManifest.xml
 
 # Resource files
 resources/
+
+# screenshots
+screenshots/
+screenshot.*
