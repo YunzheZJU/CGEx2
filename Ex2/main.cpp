@@ -12,7 +12,7 @@ using namespace std;
 
 bool run = 1;
 bool lm = 1;					// Polygon line mode
-bool save = 0;
+bool save = 0;					// Export BMP switch
 
 float fLineWidth = 2.0f;
 
@@ -37,7 +37,9 @@ int ColorMark = 1;
 
 int frame = 1;
 
-int delay = 8;
+int delay = 1;
+
+char text[50] = "Welcome!";
 
 enum {
 	Xmax,
@@ -175,22 +177,27 @@ void keyboard(unsigned char key, int x, int y) {
 		exit(0);
 	case 'q':
 		cout << "q pressed. Pause." << endl;
+		strcpy(text, "Q pressed.");
 		run = 0;
 		break;
 	case 'c':
 		cout << "c pressed. Continue." << endl;
+		strcpy(text, "C pressed.");
 		run = 1;
 		break;
 	case 'x':
 		cout << "x pressed. Switch line mode: " << lm << "." << endl;
+		strcpy(text, "X pressed.");
 		lm = !lm;
 		break;
 	case 's':
 		screenshot();
 		cout << "s pressed. Screenshot Saved." << endl;
+		strcpy(text, "S pressed. Screenshot is Saved.");
 		break;
 	default:
 		cout << "Some key is pressed, but nothing happened." << endl;
+		strcpy(text, "Try again.");
 		break;
 	}
 }
@@ -224,15 +231,10 @@ void exportBmp(void) {
 	char filename[30];
 	sprintf(filename, "./screenshots/%d.bmp", frame);
 	FILE * fp = fopen(filename, "w+");
-	//cout << "1" << endl;
 	fwrite(&fileHeader, sizeof(fileHeader), 1, fp);
-	//cout << "2" << endl;
 	fwrite(&infoHeader, sizeof(infoHeader), 1, fp);
-	//cout << "3" << endl;
 	fwrite(buffer, 1, (viewPort[2] * viewPort[3] * 3), fp);
-	//cout << "4" << endl;
 	fclose(fp);
-	//cout << "5" << endl;
 
 	free(buffer);
 }
@@ -241,15 +243,19 @@ void menu(int value) {
 	switch (value) {
 	case RED:
 		glClearColor(0.8, 0.0, 0.0, 0.0);
+		strcpy(text, "Background color changed.");
 		break;
 	case GREEN:
 		glClearColor(0.0, 0.8, 0.0, 0.0);
+		strcpy(text, "Background color changed.");
 		break;
 	case BLUE:
 		glClearColor(0.0, 0.0, 0.8, 0.0);
+		strcpy(text, "Background color changed.");
 		break;
 	case DEFAULT:
 		glClearColor(0.2, 0.2, 0.2, 0.0);
+		strcpy(text, "Background color changed.");
 		break;
 	case EXIT:
 		exit(0);
@@ -320,13 +326,20 @@ void redraw()
 		Draw_Table();							// Draw table
 	glPopMatrix();
 
+	glColor3f(1.0f, 1.0f, 1.0f);	// ÉèÖÃ×ÖÌåÑÕÉ«
+	char *c;
+	glRasterPos3f(0.0f, 1.5f, -6.0f);
+	for (c = text; *c != '\0'; c++) {
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+	}
+	
 	glutSwapBuffers();
 
 	//cout << frame << endl;
-	/*if ( frame <= 10000 && save) {
+	if ( frame <= 2000 && save ) {
 		exportBmp();
 		frame++;
-	}*/
+	}
 }
 
 void initMenu(void) {

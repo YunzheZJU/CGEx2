@@ -247,3 +247,4 @@ resources/
 # screenshots
 screenshots/
 screenshot.*
+/Ex2/Thumbs.db
