@@ -3,6 +3,7 @@
 
 #include "gl/glut.h"
 #include "iostream"
+#include "bitmap.h"
 
 using namespace std;
 
@@ -60,7 +61,7 @@ void DrawCube(GLfloat x, GLfloat y, GLfloat z, GLfloat xlength, GLfloat ylength,
 	glPopMatrix();
 }
 
-void Draw_Table_by_vertex_array() {
+void Draw_Table_by_vertex_array(void) {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, vt);//死活没显示长方形居然是因为没改“pt”
 	glColor3f(1.0, 0.0, 0.0);
@@ -75,7 +76,7 @@ void Draw_Table_by_vertex_array() {
 	glDrawElements(GL_QUADS, 104, GL_UNSIGNED_BYTE, vertexIndex);
 }
 
-void Draw_Table() {
+void Draw_Table(void) {
 	DrawCube(0.0, 0.0, -1.5, 5.0, 4.0, 1.0);
 	DrawCube(1.5, 1.0, 0.5, 0.67, 0.67, 3.0);
 	DrawCube(1.5, -1.0, 0.5, 0.67, 0.67, 3.0);
@@ -111,6 +112,16 @@ void keyboard(unsigned char key, int x, int y) {
 		cout << "M pressed. Click the right button to check for menu items." << endl;
 		strcpy(text, "M pressed. Click the right button to check for menu items.");
 		glutAttachMenu(GLUT_RIGHT_BUTTON);
+		break;
+	case 's':
+	case 'S':
+		screenshot();
+		cout << "s pressed. Screenshot Saved." << endl;
+		strcpy(text, "S pressed. Screenshot is Saved.");
+		break;
+	default:
+		cout << "Some key is pressed, but nothing happened." << endl;
+		strcpy(text, "Some key is pressed, but nothing happened. Try again.");
 		break;
 	}
 }
@@ -187,7 +198,7 @@ void reshape(int width, int height) {
 	glLoadIdentity();									// Reset The Modelview Matrix
 }
 
-void redraw() {
+void redraw(void) {
 	// Display in wireframe mode
 	if (lm)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
