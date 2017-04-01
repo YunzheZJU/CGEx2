@@ -2,10 +2,29 @@
 //
 
 #include "gl/glut.h"
+#include "iostream"
+
+using namespace std;
+
+bool run = 1;
+bool lm = 1;					// Polygon line mode switch
+
+float fLineWidth = 2.0f;
+int delay = 8;
 
 float fTranslate;
 float fRotate;
 float fScale;
+
+enum {
+	NOTHING,
+	RED,
+	GREEN,
+	BLUE,
+	DEFAULT,
+	HIDE,
+	EXIT
+};
 
 typedef GLfloat vertex3[3];
 //vertex3 pt[40] = { {0,0,0},{0,1,0} ,{1,0,0} ,{1,1,0} ,{0,0,1} ,{0,1,1} ,{1,0,1} ,{1,1,1} };
@@ -32,7 +51,15 @@ vertex3 vt[40] = {
 	{ -2.5,-2,-1 },{ 2.5,-2,-1 },{ -2.5,-2,-2 },{ 2.5,-2,-2 } 
 };
 
-void Draw_Table() {
+void DrawCube(GLfloat x, GLfloat y, GLfloat z, GLfloat xlength, GLfloat ylength, GLfloat zlength) {
+	glPushMatrix();
+	glTranslatef(x, y, z);
+	glScalef(xlength, ylength, zlength);
+	glutSolidCube(1);
+	glPopMatrix();
+}
+
+void Draw_Table_by_vertex_array() {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, vt);//死活没显示长方形居然是因为没改“pt”
 	glColor3f(1.0, 0.0, 0.0);
@@ -47,20 +74,77 @@ void Draw_Table() {
 	glDrawElements(GL_QUADS, 104, GL_UNSIGNED_BYTE, vertexIndex);
 }
 
-void Draw_Triangle() // This function draws a triangle with RGB colors
-{
-	glBegin(GL_TRIANGLES);
-		 glColor3f(1.0f, 0.0f, 0.0f);
-		glVertex3f(0.0f, 1.0f, 0.0f);
-		 glColor3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(-1.0f,-1.0f, 0.0f);
-		 glColor3f(0.0f, 0.0f,1.0f);
-		glVertex3f( 1.0f,-1.0f, 0.0f);			
-	glEnd();
+void Draw_Table() {
+	DrawCube(0.0, 0.0, -1.5, 5.0, 4.0, 1.0);
+	DrawCube(1.5, 1.0, 0.5, 0.67, 0.67, 3.0);
+	DrawCube(1.5, -1.0, 0.5, 0.67, 0.67, 3.0);
+	DrawCube(-1.5, 1.0, 0.5, 0.67, 0.67, 3.0);
+	DrawCube(-1.5, -1.0, 0.5, 0.67, 0.67, 3.0);
 }
 
-void reshape(int width, int height)
-{
+void keyboard(unsigned char key, int x, int y) {
+	switch (key) {
+	case 27:
+		exit(0);
+	case 'q':
+		cout << "q pressed. Pause." << endl;
+		run = 0;
+		break;
+	case 'c':
+		cout << "c pressed. Continue." << endl;
+		run = 1;
+		break;
+	case 'x':
+		cout << "x pressed. Switch line mode: " << lm << "." << endl;
+		lm = !lm;
+		break;
+	}
+}
+
+void menu(int value) {
+	switch (value) {
+	case RED:
+		glClearColor(0.8, 0.0, 0.0, 0.0);
+		break;
+	case GREEN:
+		glClearColor(0.0, 0.8, 0.0, 0.0);
+		break;
+	case BLUE:
+		glClearColor(0.0, 0.0, 0.8, 0.0);
+		break;
+	case DEFAULT:
+		glClearColor(0.2, 0.2, 0.2, 0.0);
+		break;
+	case EXIT:
+		exit(0);
+	case HIDE:
+		glutDestroyMenu(glutGetMenu());
+		break;
+	}
+}
+
+void transform(void) {
+	if (run) {
+		fTranslate += 0.005f;
+		fRotate += 0.5f;
+		fScale += 0.002f;
+
+		if (fTranslate > 2.5f)
+			fTranslate = 0.0f;
+		if (fScale > 0.5f)
+			fScale = 0.0f;
+	}
+}
+
+void timer(int value) {
+	transform();
+
+	glutPostRedisplay();
+
+	glutTimerFunc(delay, timer, 1);
+}
+
+void reshape(int width, int height) {
 	if (height==0)										// Prevent A Divide By Zero By
 	{
 		height=1;										// Making Height Equal One
@@ -78,15 +162,12 @@ void reshape(int width, int height)
 	glLoadIdentity();									// Reset The Modelview Matrix
 }
 
-void idle()
-{
-	glutPostRedisplay();
-}
-
-void redraw()
-{
+void redraw() {
 	// Display in wireframe mode
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if (lm)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glLoadIdentity();							// Reset The Current Modelview Matrix
@@ -96,7 +177,8 @@ void redraw()
 		glTranslatef(-3.0f, 0.0f,-6.0f);		// Place the table Left
 		glTranslatef(0.0f, fTranslate, 0.0f);	// Translate in Y direction
 		glScalef(0.4f, 0.4f, 0.4f);				// Scale the Table
-		Draw_Table();							// Draw table					
+		Draw_Table();							// Draw table
+		//Draw_Table_by_vertex_array();			// Draw table by vertex array
 	glPopMatrix();
 
 	// Rotate
@@ -106,6 +188,7 @@ void redraw()
 		glRotatef(fRotate, 30 * fRotate, 20 * fRotate, 40 * fRotate);
 		glScalef(0.4f, 0.4f, 0.4f);				// Scale the Table
 		Draw_Table();							// Draw table
+		//Draw_Table_by_vertex_array();			// Draw table by vertex array
 	glPopMatrix();
 
 	// Scale
@@ -113,30 +196,48 @@ void redraw()
 		glTranslatef(3.0f, 0.0f, -6.0f);		// Place the table at Center
 		glScalef(0.4 * (1 - fScale), 0.4 * (1 - fScale), 0.4 * (1 - fScale));	// Scale the Table
 		Draw_Table();							// Draw table
+		//Draw_Table_by_vertex_array();			// Draw table by vertex array
 	glPopMatrix();
-
-	fTranslate += 0.005f;
-	fRotate    += 0.5f;
-	fScale     += 0.005f;
-
-	if (fTranslate > 2.5f)
-		fTranslate = 0.0f;
-	if (fScale > 0.5f)
-		fScale = 0.0f;
 
 	glutSwapBuffers();
 }
 
-int main (int argc,  char *argv[])
-{
+void initMenu(void) {
+	glutCreateMenu(menu);
+
+	glutAddMenuEntry("Please select as quick as possible!", NOTHING);
+	glutAddMenuEntry("---------Change color here---------", NOTHING);
+	glutAddMenuEntry("    Red", RED);
+	glutAddMenuEntry("    Green", GREEN);
+	glutAddMenuEntry("    Blue", BLUE);
+	glutAddMenuEntry("    Default", DEFAULT);
+	glutAddMenuEntry("------------------------------------------", NOTHING);
+	glutAddMenuEntry("Hide menu. --You cannot cancel it!", HIDE);
+	glutAddMenuEntry("------------------------------------------", NOTHING);
+	glutAddMenuEntry("Exit", EXIT);
+
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+int main(int argc, char *argv[]) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutInitWindowSize(640,480);                                                  
+	glutInitWindowSize(640, 480);
 	glutCreateWindow("Exercise2");
 
+	// Initiate the menu
+	initMenu();
+	// Set the background color - dark grey
+	glClearColor(0.2, 0.2, 0.2, 0.0);
+	// Set the line width
+	glLineWidth(fLineWidth);
+
 	glutDisplayFunc(redraw);
-	glutReshapeFunc(reshape);		
-	glutIdleFunc(idle);					
+	glutReshapeFunc(reshape);
+	glutKeyboardFunc(keyboard);
+
+	// Set the timer
+	glutTimerFunc(delay, timer, 1);
 
 	glutMainLoop();
 
