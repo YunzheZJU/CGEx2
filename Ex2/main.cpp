@@ -7,6 +7,8 @@
 
 using namespace std;
 
+#pragma warning(disable: 4996)
+
 bool run = 1;
 bool lm = 1;					// Polygon line mode switch
 
