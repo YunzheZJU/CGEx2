@@ -37,7 +37,7 @@ int ColorMark = 1;
 
 int frame = 1;
 
-int delay = 1;
+int delay = 8;
 
 char text[50] = "Welcome!";
 
